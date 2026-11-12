@@ -1,0 +1,20 @@
+[
+  { "id": "lagerverwaltung", "label": "Lagerverwaltung", "icon": "warehouse" },
+  { "id": "dashboard", "label": "Dashboard", "icon": "layout-grid" },
+  { "id": "banking", "label": "Banking", "icon": "landmark" },
+  { "id": "telefonie", "label": "Telefonie", "icon": "phone-call" },
+  { "id": "accounting", "label": "Accounting", "icon": "user-round-cog" },
+  { "id": "verkauf", "label": "Verkauf", "icon": "store" },
+  { "id": "statistik", "label": "Statistik", "icon": "chart-pie" },
+  { "id": "post-office", "label": "Post Office", "icon": "mail" },
+  { "id": "administration", "label": "Administration", "icon": "settings" },
+  { "id": "help", "label": "Help", "icon": "book-open" },
+  { "id": "warenbestand", "label": "Warenbestand", "icon": "package" },
+  { "id": "auswahllisten", "label": "Auswahllisten", "icon": "list-checks" },
+  { "id": "einkauf", "label": "Einkauf", "icon": "shopping-cart" },
+  { "id": "rechnungen", "label": "Rechnungen", "icon": "receipt-text" },
+  { "id": "kontakte", "label": "Kontakte", "icon": "contact-round" },
+  { "id": "kalender", "label": "Kalender", "icon": "calendar-days" },
+  {"id": "berichte", "label": "Berichte", "icon": "file-chart-column-increasing"
+  }
+]
