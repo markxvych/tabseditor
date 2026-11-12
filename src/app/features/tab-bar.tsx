@@ -1,16 +1,43 @@
+import { Cursor, PointerActivationConstraints } from "@dnd-kit/dom";
+import {
+  DragDropProvider,
+  KeyboardSensor,
+  PointerSensor,
+} from "@dnd-kit/react";
+import { isSortable } from "@dnd-kit/react/sortable";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import { TabItem, TabLabel, tabLinkClass, type Tab } from "./tab-item";
 import { overflowTriggerClass, TabOverflowMenu } from "./tab-overflow-menu";
+
+const sensors = [
+  PointerSensor.configure({
+    activationConstraints: () => [
+      new PointerActivationConstraints.Distance({ value: 5 }),
+    ],
+  }),
+  KeyboardSensor.configure({
+    // Enter opens the focused tab. Space starts a drag.
+    preventActivation: (event, source) =>
+      event.code !== "Space" || event.target !== source.handle,
+  }),
+];
 
 type TabBarProps = {
   tabs: Tab[];
   activeId: string | undefined;
   onTogglePin: (id: string) => void;
   onClose: (id: string) => void;
+  onMoveTab: (from: number, to: number) => void;
 };
 
-export function TabBar({ tabs, activeId, onTogglePin, onClose }: TabBarProps) {
+export function TabBar({
+  tabs,
+  activeId,
+  onTogglePin,
+  onClose,
+  onMoveTab,
+}: TabBarProps) {
   const barRef = useRef<HTMLElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(0);
@@ -63,23 +90,44 @@ export function TabBar({ tabs, activeId, onTogglePin, onClose }: TabBarProps) {
       aria-label="Tabs"
       className="relative flex min-h-12 min-w-0 bg-[#fafbfc]"
     >
-      <ul
-        className={
-          hiddenTabs.length > 0
-            ? "flex min-w-0 flex-1 flex-nowrap"
-            : "flex min-w-0 flex-nowrap"
+      <DragDropProvider
+        plugins={(defaults) =>
+          defaults.map((plugin) =>
+            plugin === Cursor
+              ? Cursor.configure({ cursor: "pointer" })
+              : plugin,
+          )
         }
+        sensors={sensors}
+        onDragEnd={({ canceled, operation }) => {
+          const { source } = operation;
+          if (canceled || !isSortable(source)) return;
+
+          const { initialIndex, index } = source;
+          if (initialIndex !== index) {
+            onMoveTab(initialIndex, index);
+          }
+        }}
       >
-        {visibleTabs.map((tab) => (
-          <TabItem
-            key={tab.id}
-            tab={tab}
-            active={tab.id === activeId}
-            onTogglePin={onTogglePin}
-            onClose={onClose}
-          />
-        ))}
-      </ul>
+        <ul
+          className={
+            hiddenTabs.length > 0
+              ? "flex min-w-0 flex-1 flex-nowrap"
+              : "flex min-w-0 flex-nowrap"
+          }
+        >
+          {visibleTabs.map((tab, index) => (
+            <TabItem
+              key={tab.id}
+              tab={tab}
+              index={index}
+              active={tab.id === activeId}
+              onTogglePin={onTogglePin}
+              onClose={onClose}
+            />
+          ))}
+        </ul>
+      </DragDropProvider>
 
       {hiddenTabs.length > 0 && (
         <TabOverflowMenu

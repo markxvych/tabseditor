@@ -61,6 +61,7 @@ export function TabOverflowMenu({
             </DropdownMenuItem>
             <DropdownMenuItem
               aria-label={"Close " + tab.label}
+              closeOnClick={false}
               onClick={() => onClose(tab.id)}
               className="group/close shrink-0 cursor-pointer justify-center"
             >

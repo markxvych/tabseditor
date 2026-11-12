@@ -1,3 +1,4 @@
+import { useSortable } from "@dnd-kit/react/sortable";
 import Link from "next/link";
 import {
   BookOpen,
@@ -80,7 +81,9 @@ export function TabLabel({
   return (
     <>
       <Icon aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.5} />
-      <span className={compact ? "sr-only" : "truncate"}>{tab.label}</span>
+      <span className={cn("font-medium", compact ? "sr-only" : "truncate")}>
+        {tab.label}
+      </span>
     </>
   );
 }
@@ -105,22 +108,39 @@ export function TabCloseIcon() {
 
 type TabItemProps = {
   tab: Tab;
+  index: number;
   active: boolean;
   onTogglePin: (id: string) => void;
   onClose: (id: string) => void;
 };
 
-export function TabItem({ tab, active, onTogglePin, onClose }: TabItemProps) {
+export function TabItem({
+  tab,
+  index,
+  active,
+  onTogglePin,
+  onClose,
+}: TabItemProps) {
+  const { ref, handleRef, isDragging } = useSortable({ id: tab.id, index });
+
   const link = (
     <Link
+      ref={handleRef}
+      role="link"
+      draggable={false}
       href={tabHref(tab.id)}
       scroll={false}
       aria-current={active ? "page" : undefined}
       className={cn(
         tabLinkClass(tab.pinned),
         !tab.pinned && "w-full",
-        "hover:bg-[#f0f2f4] hover:text-[#27323c] focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#6097e7]",
-        active && "border-t-[#6097e7] bg-[#edf2f7] text-[#25303a]",
+        "touch-pan-y cursor-pointer",
+        isDragging
+          ? "bg-[#7F858D] text-white"
+          : "hover:bg-[#f0f2f4] hover:text-[#27323c] focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#6097e7]",
+        !isDragging && active && "bg-[#edf2f7] text-[#25303a]",
+        !isDragging &&
+          (tab.pinned ? "border-t-[#7F858D]" : active && "border-t-[#6097e7]"),
       )}
     >
       <TabLabel tab={tab} compact={tab.pinned} />
@@ -129,6 +149,7 @@ export function TabItem({ tab, active, onTogglePin, onClose }: TabItemProps) {
 
   return (
     <li
+      ref={ref}
       className={cn(
         "relative shrink-0 after:pointer-events-none after:absolute after:top-4 after:right-0 after:h-4 after:w-px after:bg-[#e5e8ec]",
         !tab.pinned && "grow",
@@ -141,27 +162,28 @@ export function TabItem({ tab, active, onTogglePin, onClose }: TabItemProps) {
               <TooltipTrigger render={link} />
               <TooltipContent
                 side="bottom"
-                className="bg-white text-[#25303a] shadow-md"
+                sideOffset={8}
+                showArrow={false}
+                className="gap-2 border border-[#e5e8ec] bg-white px-3 py-2.5 text-sm text-[#30363d] shadow-sm"
               >
-                {tab.label}
+                <TabLabel tab={tab} />
               </TooltipContent>
             </Tooltip>
           ) : (
             link
           )}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label={"Close " + tab.label}
-            className={cn(
-              "group/close absolute z-10 opacity-0 group-hover/tab:opacity-100 focus-visible:opacity-100 hover:bg-transparent pointer-coarse:opacity-100",
-              tab.pinned ? "top-0 right-0" : "top-1/2 right-1 -translate-y-1/2",
-            )}
-            onClick={() => onClose(tab.id)}
-          >
-            <TabCloseIcon />
-          </Button>
+          {!tab.pinned && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={"Close " + tab.label}
+              className="group/close absolute top-1/2 right-1 z-10 -translate-y-1/2 opacity-0 group-hover/tab:opacity-100 focus-visible:opacity-100 hover:bg-transparent pointer-coarse:opacity-100"
+              onClick={() => onClose(tab.id)}
+            >
+              <TabCloseIcon />
+            </Button>
+          )}
         </ContextMenuTrigger>
         <ContextMenuContent className="min-w-40">
           <ContextMenuItem onClick={() => onTogglePin(tab.id)}>
